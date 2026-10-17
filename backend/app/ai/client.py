@@ -209,41 +209,87 @@ def synthesize_fallback_story(context: StoryContext) -> StoryOutput:
 
 def call_claude_api(context: StoryContext, timeout: float = 8.0) -> StoryOutput:
     """
-    Calls Anthropic Claude API to generate a creative Indian maths story.
-    Falls back gracefully to deterministic synthesis if API key is not present or API call fails.
+    Calls configured LLM API (Claude, Gemini, or OpenAI) to generate a creative Indian maths story.
+    Falls back gracefully to deterministic synthesis if no API keys are present or API call fails.
     """
-    api_key = API_KEY or os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        logger.info("ANTHROPIC_API_KEY not set. Using deterministic AI story synthesis.")
-        return synthesize_fallback_story(context)
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    gemini_key = os.getenv("GEMINI_API_KEY", "")
+    openai_key = os.getenv("OPENAI_API_KEY", "")
 
     user_prompt = build_user_prompt(context)
 
-    headers = {
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
+    # 1. Try Anthropic Claude API if key configured
+    if anthropic_key:
+        try:
+            headers = {
+                "x-api-key": anthropic_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            }
+            payload = {
+                "model": os.getenv("ANTHROPIC_MODEL", "claude-haiku-5-5"),
+                "max_tokens": 600,
+                "temperature": 0.3,
+                "system": SYSTEM_PROMPT,
+                "messages": [{"role": "user", "content": user_prompt}]
+            }
+            with httpx.Client(timeout=timeout) as client:
+                resp = client.post(ANTHROPIC_API_URL, headers=headers, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+                raw_content = data["content"][0]["text"]
+                cleaned_json = clean_llm_json_response(raw_content)
+                parsed = json.loads(cleaned_json)
+                return StoryOutput(**parsed)
+        except Exception as exc:
+            logger.warning(f"Claude API generation failed ({exc}). Trying next provider or fallback.")
 
-    payload = {
-        "model": DEFAULT_MODEL,
-        "max_tokens": 600,
-        "temperature": 0.3,
-        "system": SYSTEM_PROMPT,
-        "messages": [
-            {"role": "user", "content": user_prompt}
-        ]
-    }
+    # 2. Try Google Gemini API if key configured
+    if gemini_key:
+        try:
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            payload = {
+                "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+                "contents": [{"parts": [{"text": user_prompt}]}],
+                "generationConfig": {"temperature": 0.3, "maxOutputTokens": 600}
+            }
+            with httpx.Client(timeout=timeout) as client:
+                resp = client.post(gemini_url, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+                raw_content = data["candidates"][0]["content"]["parts"][0]["text"]
+                cleaned_json = clean_llm_json_response(raw_content)
+                parsed = json.loads(cleaned_json)
+                return StoryOutput(**parsed)
+        except Exception as exc:
+            logger.warning(f"Gemini API generation failed ({exc}). Trying next provider or fallback.")
 
-    try:
-        with httpx.Client(timeout=timeout) as client:
-            resp = client.post(ANTHROPIC_API_URL, headers=headers, json=payload)
-            resp.raise_for_status()
-            data = resp.json()
-            raw_content = data["content"][0]["text"]
-            cleaned_json = clean_llm_json_response(raw_content)
-            parsed = json.loads(cleaned_json)
-            return StoryOutput(**parsed)
-    except Exception as exc:
-        logger.warning(f"Claude API generation failed ({exc}). Falling back to deterministic synthesis.")
-        return synthesize_fallback_story(context)
+    # 3. Try OpenAI API if key configured
+    if openai_key:
+        try:
+            headers = {
+                "Authorization": f"Bearer {openai_key}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": "gpt-4o-mini",
+                "temperature": 0.3,
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt}
+                ]
+            }
+            with httpx.Client(timeout=timeout) as client:
+                resp = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+                raw_content = data["choices"][0]["message"]["content"]
+                cleaned_json = clean_llm_json_response(raw_content)
+                parsed = json.loads(cleaned_json)
+                return StoryOutput(**parsed)
+        except Exception as exc:
+            logger.warning(f"OpenAI API generation failed ({exc}).")
+
+    # 4. Deterministic fallback synthesis (100% reliable, zero API cost)
+    logger.info("Using deterministic AI story synthesis.")
+    return synthesize_fallback_story(context)

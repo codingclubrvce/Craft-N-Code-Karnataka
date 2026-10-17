@@ -122,6 +122,19 @@
       "hint_1": "Are the items being split into separate equal shares, or are they being joined together into one pile?",
       "hint_2": "Draw a bar model or group boxes showing the total quantity partitioned into equal parts.",
       "hint_3": "For instance, if 3 children share 15 items equally, each gets 15 / 3 = 5 items. Use the same division method for your problem."
+    },
+    {
+      "template_id": "share_equal_01",
+      "interest": "cricket",
+      "numbers": {
+        "total": 84,
+        "groups": 12
+      },
+      "story": "A coach received 84 cricket practice balls to distribute across 12 training nets. Every training net received the exact same share for fielding practice.",
+      "question": "How many practice balls were allocated to each of the 12 nets?",
+      "hint_1": "Are the items being split into separate equal shares, or are they being joined together into one pile?",
+      "hint_2": "Draw a bar model or group boxes showing the total quantity partitioned into equal parts.",
+      "hint_3": "For instance, if 3 children share 15 items equally, each gets 15 / 3 = 5 items. Use the same division method for your problem."
     }
   ],
   "share_equal_02:festivals": [
@@ -565,6 +578,51 @@
       "hint_1": "Are you measuring the outer boundary path around the rectangle, or the flat surface inside?",
       "hint_2": "Draw a rectangle and label all four outer sides with their dimensions.",
       "hint_3": "For instance, a rectangle with length 7 m and width 3 m has perimeter 2 * (7 + 3) = 20 meters. Use the same perimeter formula."
+    }
+  ],
+  "diff_comp_02:default": [
+    {
+      "template_id": "diff_comp_02",
+      "interest": "default",
+      "numbers": {
+        "diff": 6,
+        "larger": 51
+      },
+      "story": "Rohan scored 51 points in the tournament. Kabir scored 6 fewer points than Rohan.",
+      "question": "How many points did Kabir score?",
+      "hint_1": "When someone has fewer than a given amount, what operation finds the smaller value?",
+      "hint_2": "Draw the larger bar and subtract the difference from it.",
+      "hint_3": "For instance, if Rohan has 50 points and Kabir has 15 fewer, Kabir has 50 - 15 = 35 points."
+    }
+  ],
+  "groups_equal_02:default": [
+    {
+      "template_id": "groups_equal_02",
+      "interest": "default",
+      "numbers": {
+        "groups": 11,
+        "per_group": 18
+      },
+      "story": "The school art club set up 11 supply tables with 18 mango laid out on each table. The monitors ensured every table had the exact same count.",
+      "question": "How many mango were laid out across all 11 tables in total?",
+      "hint_1": "Are multiple sets of the same size being counted together, or is one quantity being separated?",
+      "hint_2": "Draw a visual diagram showing each equal group or use repeated equal jumps on a number line.",
+      "hint_3": "For instance, if there are 3 trays with 5 snacks on each tray, there are 3 * 5 = 15 snacks in all. Follow the same multiplication step."
+    }
+  ],
+  "diff_comp_03:default": [
+    {
+      "template_id": "diff_comp_03",
+      "interest": "default",
+      "numbers": {
+        "smaller": 70,
+        "larger": 98
+      },
+      "story": "In the inter-school tournament, Rohan scored 98 runs during the first innings. Kabir scored 70 runs during the second innings.",
+      "question": "How many more runs did Rohan score than Kabir?",
+      "hint_1": "Are you comparing the difference between two separate quantities, or putting them together?",
+      "hint_2": "Draw two comparison bars side by side and look at the difference gap between them.",
+      "hint_3": "For instance, if one batsman has 50 runs and another has 35 runs, the difference is 50 - 35 = 15 runs. Apply the same comparison step."
     }
   ]
 }
