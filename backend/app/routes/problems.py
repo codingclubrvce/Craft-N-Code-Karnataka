@@ -123,6 +123,24 @@ def next_problem(payload: NextProblemRequest, db: Session = Depends(get_db)):
     template = random.choice(templates)
     problem_data = generate_numbers_and_problem(template)
 
+    # Person C: AI story and hint generation with 6-rule validation & fallback
+    try:
+        from app.ai.generator import generate_story
+        story_output = generate_story(
+            template=template,
+            numbers=problem_data["numbers"],
+            interest=payload.interest,
+            answer=problem_data["answer"]
+        )
+        problem_data["story"] = story_output.story
+        problem_data["question"] = story_output.question
+        if "hints" in problem_data:
+            problem_data["hints"]["level_1"] = story_output.hint_1
+            problem_data["hints"]["level_2"] = story_output.hint_2
+            problem_data["hints"]["level_3"] = story_output.hint_3
+    except Exception:
+        pass
+
     # Ensure template is in DB
     db_template = db.query(TemplateModel).filter(TemplateModel.id == template.id).first()
     if not db_template:
